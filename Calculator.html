@@ -16,7 +16,7 @@
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      background: linear-gradient(135deg, #4f46e5, #7c3aed);
+      background: linear-gradient(135deg, #D3D3D3, #A9A9A9);
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       padding: 16px;
       transition: background 0.4s ease;
@@ -143,8 +143,39 @@
       display: flex;
       flex-direction: column;
     }
-    
-    .history-panel h3 { margin-top: 0; text-align: center; border-bottom: 1px solid #ddd; padding-bottom: 12px; margin-bottom: 12px; color: #334155; }
+
+    .history-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 0px;
+      margin-bottom: 0px;
+    }
+
+    .delete-history-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #dc2626;
+      padding: 5px 10px 5px 10px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transform: translateY(-12px);
+    }
+
+    .delete-history-btn:hover {
+      background-color: #fee2e2;
+      transform: translateY(-12px);
+    }
+
+    .history-header h3 {
+      margin: 0;
+      color: #334155;
+    }
+        
+    .history-panel h3 { margin-top: 0; text-align: center; padding-bottom: 12px; margin-bottom: 12px; color: #334155; }
     #history-list { list-style: none; padding: 0; margin: 0; overflow-y: auto; flex-grow: 1; }
     #history-list li { padding: 8px 5px; border-bottom: 1px solid #eee; font-size: 14px; text-align: right; }
     
@@ -156,7 +187,7 @@
     .settings-panel {
         position: fixed;
         top: 20px;
-        right: -300px; /* Start off-screen */
+        right: -300px;
         width: 280px;
         background-color: white;
         padding: 16px;
@@ -340,15 +371,30 @@
       </div>
     </div>
 
-    <div class="history-panel">
+  <div class="history-panel">
+    <div class="history-header">
       <h3>Calculation History</h3>
-      <ul id="history-list"></ul>
+      <button onclick="clearAllHistory()" class="delete-history-btn" title="Clear all history">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M19 7L18.1327 19.1425C18.0579 20.1891 17.187 21 16.1378 21H7.86224C6.81296 21 5.94208 20.1891 5.86732 19.1425L5 7M10 11V17M14 11V17M15 7V4C15 3.44772 14.5523 3 14 3H10C9.44772 3 9 3.44772 9 4V7M4 7H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
     </div>
+    <ul id="history-list"></ul>
   </div>
   
   <div class="notification" id="notification">
     <div class="notification-icon">⚠️</div>
     <div class="notification-message" id="notification-message"></div>
+  </div>
+
+  <div class="notification" id="confirm-modal" style="flex-direction: column; text-align: center; pointer-events: auto;">
+    <div class="notification-icon">⚠️</div>
+    <div class="notification-message" id="confirm-message">Are you sure you want to clear all calculation history?</div>
+    <div style="margin-top:10px; display:flex; gap:10px; justify-content:center;">
+      <button id="confirm-yes" style="padding:6px 12px; border:none; border-radius:6px; background:#dc2626; color:white; cursor:pointer;">Yes</button>
+      <button id="confirm-no" style="padding:6px 12px; border:none; border-radius:6px; background:#e2e8f0; color:#334155; cursor:pointer;">No</button>
+    </div>
   </div>
   
   <div class="settings-panel" id="settings-panel">
@@ -398,7 +444,7 @@
     const numberSystemBtns = document.querySelectorAll('.number-system-btn');
     const notification = document.getElementById('notification');
     const notificationMessage = document.getElementById('notification-message');
-    
+
     // --- New Settings Elements ---
     const settingsPanel = document.getElementById('settings-panel');
     const bgTypeRadios = document.querySelectorAll('input[name="bg-type"]');
@@ -408,17 +454,22 @@
     const gradColor2 = document.getElementById('grad-color2');
     const gradDirection = document.getElementById('grad-direction');
     const solidColor = document.getElementById('solid-color');
-    
-    let calculationHistory = [];
+
+    // --- Confirm Modal Elements ---
+    const confirmModal = document.getElementById("confirm-modal");
+    const confirmMessage = document.getElementById("confirm-message");
+    const confirmYes = document.getElementById("confirm-yes");
+    const confirmNo = document.getElementById("confirm-no");
+
+    let calculationHistory = JSON.parse(localStorage.getItem('calcHistory')) || [];
     let isResultDisplayed = false;
     let currentBase = 'dec';
     let originalDecimalValue = null;
     let isFractionDisplayed = false;
     let memoryValue = 0;
 
-    // List of function names for smart deletion
     const functionNames = [
-      'sin(', 'cos(', 'tan(', 'asin(', 'acos(', 'atan(', 
+      'sin(', 'cos(', 'tan(', 'asin(', 'acos(', 'atan(',
       'sinh(', 'cosh(', 'tanh(', 'asinh(', 'acosh(', 'atanh(',
       'log(', 'ln(', 'sqrt(', 'cbrt(', 'tenPow(', 'exp(', 'abs('
     ];
@@ -443,92 +494,117 @@
     const acosh = (val) => Math.acosh(val);
     const atanh = (val) => Math.atanh(val);
     const exp = (val) => Math.exp(val);
-    
+
     const gcd = (a, b) => b ? gcd(b, a % b) : a;
     const factorial = (n) => {
-        if (n < 0 || n % 1 !== 0) return NaN;
-        if (n > 170) return Infinity;
-        if (n === 0 || n === 1) return 1;
-        let result = 1;
-        for (let i = 2; i <= n; i++) {
-            result *= i;
-        }
-        return result;
+      if (n < 0 || n % 1 !== 0) return NaN;
+      if (n > 170) return Infinity;
+      if (n === 0 || n === 1) return 1;
+      let result = 1;
+      for (let i = 2; i <= n; i++) {
+        result *= i;
+      }
+      return result;
     };
-    
+
     // --- New Settings Functions ---
     function toggleSettings() {
-        settingsPanel.classList.toggle('show');
+      settingsPanel.classList.toggle('show');
     }
 
     function updateBackground() {
-        const bgType = document.querySelector('input[name="bg-type"]:checked').value;
-        let backgroundStyle = '';
-        const settings = { type: bgType };
+      const bgType = document.querySelector('input[name="bg-type"]:checked').value;
+      let backgroundStyle = '';
+      const settings = { type: bgType };
 
-        if (bgType === 'gradient') {
-            backgroundStyle = `linear-gradient(${gradDirection.value}, ${gradColor1.value}, ${gradColor2.value})`;
-            settings.color1 = gradColor1.value;
-            settings.color2 = gradColor2.value;
-            settings.direction = gradDirection.value;
-        } else { // solid
-            backgroundStyle = solidColor.value;
-            settings.color = solidColor.value;
-        }
+      if (bgType === 'gradient') {
+        backgroundStyle = `linear-gradient(${gradDirection.value}, ${gradColor1.value}, ${gradColor2.value})`;
+        settings.color1 = gradColor1.value;
+        settings.color2 = gradColor2.value;
+        settings.direction = gradDirection.value;
+      } else {
+        backgroundStyle = solidColor.value;
+        settings.color = solidColor.value;
+      }
 
-        document.body.style.background = backgroundStyle;
-        localStorage.setItem('calculatorBackground', JSON.stringify(settings));
+      document.body.style.background = backgroundStyle;
+      localStorage.setItem('calculatorBackground', JSON.stringify(settings));
     }
-    
+
     function loadBackgroundSettings() {
-        const savedSettings = localStorage.getItem('calculatorBackground');
-        if (savedSettings) {
-            const settings = JSON.parse(savedSettings);
-            
-            if (settings.type === 'solid') {
-                document.querySelector('input[name="bg-type"][value="solid"]').checked = true;
-                solidColor.value = settings.color;
-                solidSettings.style.display = 'block';
-                gradientSettings.style.display = 'none';
-            } else { // gradient is default
-                document.querySelector('input[name="bg-type"][value="gradient"]').checked = true;
-                gradColor1.value = settings.color1 || '#4f46e5';
-                gradColor2.value = settings.color2 || '#7c3aed';
-                gradDirection.value = settings.direction || '135deg';
-                solidSettings.style.display = 'none';
-                gradientSettings.style.display = 'block';
-            }
+      const savedSettings = localStorage.getItem('calculatorBackground');
+      if (savedSettings) {
+        const settings = JSON.parse(savedSettings);
+
+        if (settings.type === 'solid') {
+          document.querySelector('input[name="bg-type"][value="solid"]').checked = true;
+          solidColor.value = settings.color;
+          solidSettings.style.display = 'block';
+          gradientSettings.style.display = 'none';
+        } else {
+          document.querySelector('input[name="bg-type"][value="gradient"]').checked = true;
+          gradColor1.value = settings.color1 || '#D3D3D3';
+          gradColor2.value = settings.color2 || '#A9A9A9';
+          gradDirection.value = settings.direction || '135deg';
+          solidSettings.style.display = 'none';
+          gradientSettings.style.display = 'block';
         }
-        updateBackground();
+      }
+      updateBackground();
     }
-    
+
     // --- Event Listeners for Settings ---
     bgTypeRadios.forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            if (e.target.value === 'solid') {
-                solidSettings.style.display = 'block';
-                gradientSettings.style.display = 'none';
-            } else {
-                solidSettings.style.display = 'none';
-                gradientSettings.style.display = 'block';
-            }
-            updateBackground();
-        });
+      radio.addEventListener('change', (e) => {
+        if (e.target.value === 'solid') {
+          solidSettings.style.display = 'block';
+          gradientSettings.style.display = 'none';
+        } else {
+          solidSettings.style.display = 'none';
+          gradientSettings.style.display = 'block';
+        }
+        updateBackground();
+      });
     });
     [gradColor1, gradColor2, gradDirection, solidColor].forEach(el => {
-        el.addEventListener('input', updateBackground);
-    });
-    
-    // --- Existing Calculator Functions ---
-    numberSystemBtns.forEach(btn => {
-      btn.addEventListener('click', () => changeNumberSystem(btn.dataset.base));
+      el.addEventListener('input', updateBackground);
     });
 
+    // --- Notification ---
     function showNotification(message) {
       notificationMessage.textContent = message;
       notification.classList.add('show');
       setTimeout(() => notification.classList.remove('show'), 3000);
     }
+
+    // --- Confirm Modal ---
+    function showConfirm(message, onYes) {
+      confirmMessage.textContent = message;
+      confirmModal.classList.add("show");
+
+      function cleanup() {
+        confirmModal.classList.remove("show");
+        confirmYes.removeEventListener("click", yesHandler);
+        confirmNo.removeEventListener("click", noHandler);
+      }
+
+      function yesHandler() {
+        cleanup();
+        if (onYes) onYes();
+      }
+
+      function noHandler() {
+        cleanup();
+      }
+
+      confirmYes.addEventListener("click", yesHandler);
+      confirmNo.addEventListener("click", noHandler);
+    }
+
+    // --- Calculator Functions ---
+    numberSystemBtns.forEach(btn => {
+      btn.addEventListener('click', () => changeNumberSystem(btn.dataset.base));
+    });
 
     function changeNumberSystem(base) {
       if (base === currentBase) return;
@@ -539,18 +615,18 @@
         else if (currentBase === 'hex') decimalValue = parseInt(currentValue, 16);
         else if (currentBase === 'bin') decimalValue = parseInt(currentValue, 2);
         else if (currentBase === 'oct') decimalValue = parseInt(currentValue, 8);
-        
+
         if (isNaN(decimalValue)) {
           showNotification("Invalid number for conversion");
           return;
         }
-        
+
         let newValue;
         if (base === 'dec') newValue = decimalValue.toString();
         else if (base === 'hex') newValue = Math.round(decimalValue).toString(16).toUpperCase();
         else if (base === 'bin') newValue = Math.round(decimalValue).toString(2);
         else if (base === 'oct') newValue = Math.round(decimalValue).toString(8);
-        
+
         calculationHistory.push(`${currentValue} (${currentBase}) → ${newValue} (${base})`);
         updateHistory();
         display.value = newValue;
@@ -572,12 +648,12 @@
         }
         isResultDisplayed = false;
       }
-      
+
       if (currentBase !== 'dec' && !getValidCharsForBase(currentBase).includes(value)) {
         showNotification(`Invalid digit for ${currentBase.toUpperCase()} mode.`);
         return;
       }
-      
+
       if (display.value === '0' && value !== '.') display.value = '';
       display.value += value;
       isFractionDisplayed = false;
@@ -610,53 +686,53 @@
       if (display.value === '0') display.value = '';
       display.value += func + '(';
     }
-    
+
     function appendOperator(op) {
-        if (isResultDisplayed) {
-            expressionDiv.textContent = display.value + op;
-            isResultDisplayed = false;
-        }
-        display.value += op;
+      if (isResultDisplayed) {
+        expressionDiv.textContent = display.value + op;
+        isResultDisplayed = false;
+      }
+      display.value += op;
     }
 
     function reciprocal() {
-        if (display.value === 'Error') return;
-        if (isResultDisplayed) {
-            display.value = `1/(${display.value})`;
-            isResultDisplayed = false;
+      if (display.value === 'Error') return;
+      if (isResultDisplayed) {
+        display.value = `1/(${display.value})`;
+        isResultDisplayed = false;
+      } else {
+        if (display.value === '0') {
+            display.value = '1/(';
         } else {
-            if (display.value === '0') {
-                 display.value = '1/(';
-            } else {
-                let currentExpr = display.value;
-                display.value = `1/(${currentExpr})`;
-            }
+            let currentExpr = display.value;
+            display.value = `1/(${currentExpr})`;
         }
+      }
     }
 
     function insertRandom() {
-        const randomNum = Math.random().toPrecision(15);
-        if (isResultDisplayed) {
-            clearForNewInput();
-            display.value = randomNum;
-            return;
-        }
-        if (display.value === '0') {
-            display.value = randomNum;
+      const randomNum = Math.random().toPrecision(15);
+      if (isResultDisplayed) {
+        clearForNewInput();
+        display.value = randomNum;
+        return;
+      }
+      if (display.value === '0') {
+        display.value = randomNum;
+      } else {
+        const lastChar = display.value.slice(-1);
+        if (!isNaN(parseInt(lastChar)) || lastChar === ')' || lastChar === 'π' || lastChar === 'e') {
+            display.value += '*' + randomNum;
         } else {
-            const lastChar = display.value.slice(-1);
-            if (!isNaN(parseInt(lastChar)) || lastChar === ')' || lastChar === 'π' || lastChar === 'e') {
-                 display.value += '*' + randomNum;
-            } else {
-                 display.value += randomNum;
-            }
+            display.value += randomNum;
         }
+      }
     }
 
     function clearForNewInput() {
-        display.value = '';
-        expressionDiv.textContent = '';
-        isResultDisplayed = false;
+      display.value = '';
+      expressionDiv.textContent = '';
+      isResultDisplayed = false;
     }
 
     function clearDisplay() {
@@ -667,28 +743,24 @@
       originalDecimalValue = null;
     }
 
-    // Enhanced delete function to handle function names as single units
     function deleteLast() {
       if (display.value === 'Error' || isResultDisplayed) return clearDisplay();
       if (display.value === '0') return;
-      
+
       let currentValue = display.value;
-      
-      // Check if the last part of the expression is a function call
+
       for (const func of functionNames) {
         if (currentValue.endsWith(func)) {
           display.value = currentValue.slice(0, -func.length);
           return;
         }
       }
-      
-      // Check if the last part is a constant
+
       if (currentValue.endsWith('π') || currentValue.endsWith('e')) {
         display.value = currentValue.slice(0, -1);
         return;
       }
-      
-      // Check if the last part is a multi-character operator
+
       const multiCharOperators = ['**2', '**'];
       for (const op of multiCharOperators) {
         if (currentValue.endsWith(op)) {
@@ -696,13 +768,12 @@
           return;
         }
       }
-      
-      // Default: delete one character
+
       display.value = currentValue.slice(0, -1);
       if (display.value === '') display.value = '0';
       isFractionDisplayed = false;
     }
-    
+
     function decimalToFraction(_decimal) {
       if (Math.abs(_decimal) > 1e12) return _decimal.toExponential(9);
       if (_decimal % 1 === 0) return _decimal.toString();
@@ -746,7 +817,7 @@
       try {
         expr = expr.replace(/π/g, "Math.PI").replace(/e/g, "Math.E");
         expr = expr.replace(/(\d+(\.\d+)?)!/g, (match, n) => `factorial(${n})`);
-        
+
         let result = eval(expr);
         result = parseFloat(result.toPrecision(15));
         display.value = result;
@@ -766,6 +837,19 @@
       historyPanel.style.display = historyPanel.style.display === 'none' ? 'flex' : 'none';
     }
 
+    function clearAllHistory() {
+      if (calculationHistory.length === 0) {
+        showNotification("History is already empty");
+        return;
+      }
+
+      showConfirm("Are you sure you want to clear all calculation history?", () => {
+        calculationHistory = [];
+        updateHistory();
+        showNotification("History cleared");
+      });
+    }
+
     function updateHistory() {
       historyList.innerHTML = '';
       calculationHistory.slice().reverse().forEach(calc => {
@@ -773,9 +857,25 @@
         li.textContent = calc;
         historyList.appendChild(li);
       });
+
+      if (typeof(Storage) !== "undefined") {
+        localStorage.setItem('calcHistory', JSON.stringify(calculationHistory));
+      }
     }
 
-    // --- New Memory Functions ---
+    document.addEventListener('DOMContentLoaded', function() {
+      loadBackgroundSettings();
+
+      if (typeof(Storage) !== "undefined") {
+        const savedHistory = localStorage.getItem('calcHistory');
+        if (savedHistory) {
+          calculationHistory = JSON.parse(savedHistory);
+          updateHistory();
+        }
+      }
+    });
+
+    // --- Memory Functions ---
     function memoryStore() {
       try {
         const value = eval(display.value.replace(/π/g, "Math.PI").replace(/e/g, "Math.E"));
@@ -830,7 +930,7 @@
         }
         display.value = result;
         expressionDiv.textContent = `${value}! =`;
-        calculationHistory.push(`${expressionDiv.textContent} ${result}`);
+        calculationHistory.push(`${value}! = ${result}`);
         updateHistory();
         isResultDisplayed = true;
       } catch (error) {
@@ -838,21 +938,38 @@
       }
     }
 
+    // --- Keydown Handler (fixed) ---
     document.addEventListener('keydown', (e) => {
-      e.preventDefault();
       const key = e.key;
-      if (key >= '0' && key <= '9' || ['+', '-', '*', '/', '.', '(', ')', '%'].includes(key)) appendValue(key);
-      else if (key === '!') appendOperator('!');
-      else if (currentBase === 'hex' && /[a-fA-F]/.test(key)) appendHexValue(key.toUpperCase());
-      else if (key === '^') appendValue('**');
-      else if (key === 'Enter' || key === '=') calculateResult();
-      else if (key === 'Backspace') deleteLast();
-      else if (key === 'Escape' || key.toLowerCase() === 'c') clearDisplay();
+
+      if (
+        key === 'Backspace' ||
+        key === 'Enter' || key === '=' ||
+        key === 'Escape' || key.toLowerCase() === 'c' ||
+        key === '^' ||
+        (key >= '0' && key <= '9') ||
+        ['+', '-', '*', '/', '.', '(', ')', '%'].includes(key) ||
+        /^[a-fA-F]$/.test(key)
+      ) {
+        e.preventDefault();
+      }
+
+      if (key === 'Backspace') {
+        deleteLast();
+      } else if (key >= '0' && key <= '9' || ['+', '-', '*', '/', '.', '(', ')', '%'].includes(key)) {
+        appendValue(key);
+      } else if (/^[a-fA-F]$/.test(key)) {
+        appendHexValue(key.toUpperCase());
+      } else if (key === '^') {
+        appendValue('**');
+      } else if (key === 'Enter' || key === '=') {
+        calculateResult();
+      } else if (key === 'Escape' || key.toLowerCase() === 'c') {
+        clearDisplay();
+      }
     });
-    
-    // Load saved settings on page load
+
     document.addEventListener('DOMContentLoaded', loadBackgroundSettings);
-    
   </script>
 </body>
 </html>
