@@ -273,12 +273,13 @@ button:active {
     align-items: center;
     justify-content: center;
     transform: translateY(-15px);
-    transition: all 0.2s;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .delete-history-btn:hover {
     background-color: #fee2e2;
-    transform: translateY(-15px);
+    transform: translateY(-18px);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
 }
 
 .history-header h3 {
@@ -438,6 +439,25 @@ input[type="color"]::-moz-color-swatch {
     background-color: #e2e8f0;
     transform: translateY(-2px);
     box-shadow: 0 6px 10px rgba(0,0,0,0.15);
+}
+
+.close-settings {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #dc2626;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 24px;    
+    line-height: 1;
+    transition: all 0.2s;
+}
+
+.close-settings:hover {
+    background-color: #fee2e2;
 }
 
 @media (max-width: 768px) {
