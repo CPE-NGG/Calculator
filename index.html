@@ -1,176 +1,96 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Scientific Calculator</title>
-  <link rel="stylesheet" href="Calculator.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scientific Calculator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="Calculator.css">
 </head>
 <body>
 
-  <div class="calculator-container">
-    <div class="calculator">
-      <div id="display-container">
-        <div id="expression"></div>
-        <input type="text" id="display" value="0" readonly>
-      </div>
-      
-      <div class="number-system">
-        <button class="number-system-btn active" data-base="dec">DEC</button>
-        <button class="number-system-btn" data-base="hex">HEX</button>
-        <button class="number-system-btn" data-base="bin">BIN</button>
-        <button class="number-system-btn" data-base="oct">OCT</button>
-      </div>
-
-      <div class="buttons-grid">
-        <button onclick="appendFunction('sin')" class="function" style="grid-column: span 2;">sin</button>
-        <button onclick="appendFunction('cos')" class="function" style="grid-column: span 2;">cos</button>
-        <button onclick="appendFunction('tan')" class="function" style="grid-column: span 2;">tan</button>
-        <button onclick="appendFunction('asin')" class="function" style="grid-column: span 2;">sin⁻¹</button>
-        <button onclick="appendFunction('acos')" class="function" style="grid-column: span 2;">cos⁻¹</button>
-        <button onclick="appendFunction('atan')" class="function" style="grid-column: span 2;">tan⁻¹</button>
-
-        <button onclick="appendFunction('sinh')" class="function" style="grid-column: span 2;">sinh</button>
-        <button onclick="appendFunction('cosh')" class="function" style="grid-column: span 2;">cosh</button>
-        <button onclick="appendFunction('tanh')" class="function" style="grid-column: span 2;">tanh</button>
-        <button onclick="appendFunction('asinh')" class="function" style="grid-column: span 2;">sinh⁻¹</button>
-        <button onclick="appendFunction('acosh')" class="function" style="grid-column: span 2;">cosh⁻¹</button>
-        <button onclick="appendFunction('atanh')" class="function" style="grid-column: span 2;">tanh⁻¹</button>
-
-        <button onclick="appendFunction('log')" class="function" style="grid-column: span 2;">log</button>
-        <button onclick="appendFunction('ln')" class="function" style="grid-column: span 2;">ln</button>
-        <button onclick="appendFunction('sqrt')" class="function" style="grid-column: span 2;">√</button>
-        <button onclick="appendValue('**2')" class="function" style="grid-column: span 2;">x²</button>
-        <button onclick="appendValue('**')" class="function" style="grid-column: span 2;">xʸ</button>
-        <button onclick="appendFunction('cbrt')" class="function" style="grid-column: span 2;">³√x</button>
-
-        <button onclick="memoryStore()" class="memory" style="grid-column: span 2;">MS</button>
-        <button onclick="memoryRecall()" class="memory" style="grid-column: span 2;">MR</button>
-        <button onclick="memoryAdd()" class="memory" style="grid-column: span 2;">M+</button>
-        <button onclick="memorySubtract()" class="memory" style="grid-column: span 2;">M-</button>
-        <button onclick="memoryClear()" class="memory" style="grid-column: span 2;">MC</button>
-        <button onclick="toggleSettings()" class="function settings-toggle-btn" style="grid-column: span 2;" title="Settings">⚙️</button>
-
-        <button onclick="appendConstant('π')" class="constant" style="grid-column: span 2;">π</button>
-        <button onclick="appendConstant('e')" class="constant" style="grid-column: span 2;">e</button>
-        <button onclick="appendFunction('tenPow')" class="function" style="grid-column: span 2;">10ˣ</button>
-        <button onclick="appendValue('%')" class="function" style="grid-column: span 2;">%</button>
-        <button onclick="insertRandom()" class="function" style="grid-column: span 2;">Ran#</button>
-        <button onclick="toggleFractionDecimal()" class="function" style="grid-column: span 2; font-weight:bold;">a/b</button>
-
-        <button onclick="appendFunction('exp')" class="function" style="grid-column: span 2;">exp</button>
-        <button onclick="appendFunction('abs')" class="function" style="grid-column: span 2;">|x|</button>
-        <button onclick="factorialFunction()" class="function" style="grid-column: span 2;">n!</button>
-        <button onclick="reciprocal()" class="function" style="grid-column: span 2;">1/x</button>
-        <button onclick="appendValue('(')" class="function" style="grid-column: span 2;">(</button>
-        <button onclick="appendValue(')')" class="function" style="grid-column: span 2;">)</button>
-        
-        <button onclick="appendHexValue('A')" class="hex-btn" style="grid-column: span 2;">A</button>
-        <button onclick="appendHexValue('B')" class="hex-btn" style="grid-column: span 2;">B</button>
-        <button onclick="appendHexValue('C')" class="hex-btn" style="grid-column: span 2;">C</button>
-        <button onclick="appendHexValue('D')" class="hex-btn" style="grid-column: span 2;">D</button>
-        <button onclick="appendHexValue('E')" class="hex-btn" style="grid-column: span 2;">E</button>
-        <button onclick="appendHexValue('F')" class="hex-btn" style="grid-column: span 2;">F</button>
-        
-        <button onclick="appendValue('7')" style="grid-column: span 2;">7</button>
-        <button onclick="appendValue('8')" style="grid-column: span 2;">8</button>
-        <button onclick="appendValue('9')" style="grid-column: span 2;">9</button>
-        <button onclick="deleteLast()" class="delete" style="grid-column: span 3;">Del</button>
-        <button onclick="clearDisplay()" class="clear" style="grid-column: span 3;">AC</button>
-        
-        <button onclick="appendValue('4')" style="grid-column: span 2;">4</button>
-        <button onclick="appendValue('5')" style="grid-column: span 2;">5</button>
-        <button onclick="appendValue('6')" style="grid-column: span 2;">6</button>
-        <button onclick="appendValue('*')" class="operator" style="grid-column: span 3;">×</button>
-        <button onclick="appendValue('/')" class="operator" style="grid-column: span 3;">÷</button>
-        
-        <button onclick="appendValue('1')" style="grid-column: span 2;">1</button>
-        <button onclick="appendValue('2')" class="number" style="grid-column: span 2;">2</button>
-        <button onclick="appendValue('3')" style="grid-column: span 2;">3</button>
-        <button onclick="appendValue('+')" class="operator" style="grid-column: span 3;">+</button>
-        <button onclick="appendValue('-')" class="operator" style="grid-column: span 3;">-</button>
-        
-        <button onclick="appendValue('0')" style="grid-column: span 4;">0</button>
-        <button onclick="appendValue('.')" style="grid-column: span 2;">.</button>
-        <button onclick="calculateResult()" class="equals" style="grid-column: span 6;">=</button>
-      </div>
-    </div>
-
-    <div class="history-panel">
-      <div class="history-header">
-        <h3>History</h3>
-        <button onclick="clearAllHistory()" class="delete-history-btn" title="Clear all history">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M19 7L18.1327 19.1425C18.0579 20.1891 17.187 21 16.1378 21H7.86224C6.81296 21 5.94208 20.1891 5.86732 19.1425L5 7M10 11V17M14 11V17M15 7V4C15 3.44772 14.5523 3 14 3H10C9.44772 3 9 3.44772 9 4V7M4 7H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
+    <div class="calculator-container">
+        <button class="history-btn" onclick="toggleHistory()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
         </button>
-      </div>
-      <ul id="history-list"></ul>
-    </div>
-  </div> 
-  <div class="notification" id="notification">
-    <div class="notification-icon">⚠️</div>
-    <div class="notification-message" id="notification-message"></div>
-  </div>
 
-  <div class="notification" id="confirm-modal" style="flex-direction: column; text-align: center; pointer-events: auto;">
-    <div class="notification-icon">⚠️</div>
-    <div class="notification-message" id="confirm-message">Are you sure you want to clear all calculation history?</div>
-    <div style="margin-top:10px; display:flex; gap:10px; justify-content:center;">
-      <button id="confirm-yes" style="padding:6px 12px; border:none; border-radius:6px; background:#dc2626; color:white; cursor:pointer;">Yes</button>
-      <button id="confirm-no" style="padding:6px 12px; border:none; border-radius:6px; background:#e2e8f0; color:#334155; cursor:pointer;">No</button>
-    </div>
-  </div>
-  
-  <div class="settings-panel" id="settings-panel">
-      <div class="settings-header">
-        <h4>Settings</h4>
-        <button onclick="toggleSettings()" class="close-settings">&times;</button>
-      </div>
-      
-      <div class="setting-section">
-          <h5 style="margin-top:0; margin-bottom:15px; color:#94a3b8; font-size:14px; text-transform:uppercase;">Background</h5>
-          
-          <div class="setting-row">
-              <label><input type="radio" name="bg-type" value="gradient" checked> Gradient</label>
-              <label><input type="radio" name="bg-type" value="solid"> Solid</label>
-          </div>
-      
-          <div id="gradient-settings">
-              <div class="setting-row">
-                  <label for="grad-color1">Color 1:</label>
-                  <input type="color" id="grad-color1" value="#4f46e5">
-              </div>
-              <div class="setting-row">
-                  <label for="grad-color2">Color 2:</label>
-                  <input type="color" id="grad-color2" value="#7c3aed">
-              </div>
-              <div class="setting-row">
-                  <label for="grad-direction">Direction:</label>
-                  <select id="grad-direction">
-                      <option value="135deg">To Top Left</option>
-                      <option value="to right">To Right</option>
-                      <option value="to bottom">To Bottom</option>
-                      <option value="45deg">To Bottom Right</option>
-                  </select>
-              </div>
-          </div>
-      
-          <div id="solid-settings" style="display: none;">
-              <div class="setting-row">
-                  <label for="solid-color">Color:</label>
-                  <input type="color" id="solid-color" value="#4f46e5">
-              </div>
-          </div>
-      </div>
-  
-      <div class="setting-section" style="margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 20px;">
-          <h5 style="margin-top:0; margin-bottom:15px; color:#94a3b8; font-size:14px; text-transform:uppercase;">Display Options</h5>
-          <button onclick="toggleHistory()" class="settings-btn">Toggle History Panel</button>
-      </div>
-  </div>
+        <div class="screen">
+            <div id="mode-label" class="mode-indicator">DEG</div>
+            <div id="expression" class="expression"></div>
+            <div id="result" class="result">0</div>
+        </div>
 
-  <script src="Calculator.js">
-  </script>
+        <div class="controls">
+            <!-- Row 1: Memory & Scientific -->
+            <button class="btn-mem" onclick="memOp('MC')">MC</button>
+            <button class="btn-mem" onclick="memOp('MR')">MR</button>
+            <button class="btn-mem" onclick="memOp('M+')">M+</button>
+            <button class="btn-mem" onclick="memOp('M-')">M-</button>
+            <button class="btn-sci" onclick="toggleTheme()">🎨</button>
+
+            <!-- Row 2: Scientific -->
+            <button class="btn-sci" onclick="toggleMode()" id="mode-btn">RAD</button>
+            <button class="btn-sci" onclick="append('sin(')">sin</button>
+            <button class="btn-sci" onclick="append('cos(')">cos</button>
+            <button class="btn-sci" onclick="append('tan(')">tan</button>
+            <button class="btn-clear" onclick="allClear()">AC</button>
+
+            <!-- Row 3 -->
+            <button class="btn-sci" onclick="append('log(')">log</button>
+            <button class="btn-sci" onclick="append('ln(')">ln</button>
+            <button class="btn-sci" onclick="append('(')">(</button>
+            <button class="btn-sci" onclick="append(')')">)</button>
+            <button class="btn-clear" onclick="backspace()">⌫</button>
+
+            <!-- Row 4 -->
+            <button class="btn-sci" onclick="append('^2')">x²</button>
+            <button class="btn-sci" onclick="append('^')">xʸ</button>
+            <button class="btn-num" onclick="append('7')">7</button>
+            <button class="btn-num" onclick="append('8')">8</button>
+            <button class="btn-num" onclick="append('9')">9</button>
+
+            <!-- Row 5 -->
+            <button class="btn-sci" onclick="append('sqrt(')">√</button>
+            <button class="btn-sci" onclick="append('root(')">ⁿ√</button>
+            <button class="btn-num" onclick="append('4')">4</button>
+            <button class="btn-num" onclick="append('5')">5</button>
+            <button class="btn-num" onclick="append('6')">6</button>
+
+            <!-- Row 6 -->
+            <button class="btn-sci" onclick="append('!')">n!</button>
+            <button class="btn-op" onclick="append('/')">÷</button>
+            <button class="btn-num" onclick="append('1')">1</button>
+            <button class="btn-num" onclick="append('2')">2</button>
+            <button class="btn-num" onclick="append('3')">3</button>
+
+            <!-- Row 7 -->
+            <button class="btn-sci" onclick="append('PI')">π</button>
+            <button class="btn-op" onclick="append('*')">×</button>
+            <button class="btn-num" onclick="append('0')">0</button>
+            <button class="btn-num" onclick="append('.')">.</button>
+            <button class="btn-op" onclick="append('-')">−</button>
+
+            <!-- Row 8 -->
+            <button class="btn-sci" onclick="append('E')">e</button>
+            <button class="btn-op" onclick="append('+')">+</button>
+            <button class="btn-equal" onclick="calculate()">=</button>
+        </div>
+
+        <!-- History Panel -->
+        <div id="history-panel" class="history-panel">
+            <div class="history-header">
+                <h3>History</h3>
+                <button onclick="toggleHistory()" style="background:none; box-shadow:none;">Close</button>
+            </div>
+            <ul id="history-list" class="history-list">
+                <!-- Items added here -->
+            </ul>
+            <button class="btn-clear" onclick="clearHistory()" style="width:100%; margin-top:10px;">Clear History</button>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script src="Calculator.js"></script>
 </body>
 </html>
